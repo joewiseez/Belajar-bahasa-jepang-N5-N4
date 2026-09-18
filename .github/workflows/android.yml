@@ -21,14 +21,24 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Create .env File if Missing
+      run: |
+        if [ ! -f .env ]; then
+          echo "GEMINI_API_KEY=AIzaSyDummyKeyForBuildPurposeOnly12345" > .env
+          echo "API_KEY=AIzaSyDummyKeyForBuildPurposeOnly12345" >> .env
+        fi
+
     - name: Setup Gradle Wrapper
-      run: gradle wrapper
+      run: gradle wrapper --gradle-version 8.4
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build APK with Gradle Wrapper
-      run: ./gradlew assembleDebug
+    - name: Build APK with Gradle
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'AIzaSyDummyKeyForBuildPurposeOnly12345' }}
+        API_KEY: ${{ secrets.GEMINI_API_KEY || 'AIzaSyDummyKeyForBuildPurposeOnly12345' }}
+      run: ./gradlew assembleDebug --no-daemon --stacktrace
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
